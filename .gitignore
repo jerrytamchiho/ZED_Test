@@ -1,2 +1,4 @@
 *.svo
 *.svo2
+*.png
+/results
