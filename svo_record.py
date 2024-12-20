@@ -62,19 +62,29 @@ def main():
             frames_recorded += 1
             # print("Frame count: " + str(frames_recorded), end="\r")
             # print(str(cam.get_timestamp(sl.TIME_REFERENCE.IMAGE).get_microseconds()))
+
+    print(opt.output_svo_file)
     
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    praser.add_argument('timestamp', type=str, help='Starting timestamp from host')
     parser.add_argument('--output_svo_file', type=str, help='Path to the SVO file that will be written', required=False, default='output.svo2')
+    parser.add_argument('--timestamp', type=str, help='Starting timestamp from host')
     opt = parser.parse_args()
     if not opt.output_svo_file.endswith(".svo") and not opt.output_svo_file.endswith(".svo2"): 
-        print("--output_svo_file parameter should be a .svo file but is not : ",opt.output_svo_file,"Exit program.")
+        print("--output_svo_file parameter should be a .svo file but is not : ", opt.output_svo_file,"Exit program.")
         exit()
 
+    # if len(sys.argv) > 1:
+    #     timestamp = sys.argv[1]
+    #     print(f'timestamp: {timestamp}')
+    # else:
+    #     print('No timestamp provided')
+
     try:
-        received_time = args.timestamp
+        received_time = opt.timestamp
         print(received_time)
         print('-------------------------------')
+    except ValueError:
+        print("No received time")
 
     main()
