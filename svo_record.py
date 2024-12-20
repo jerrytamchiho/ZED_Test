@@ -37,8 +37,10 @@ signal(SIGINT, handler)
 def main():
     
     init = sl.InitParameters()
+    init.camera_resolution = sl.RESOLUTION.HD1080
+    init.camera_fps = 30
     init.depth_mode = sl.DEPTH_MODE.ULTRA # Set configuration parameters for the ZED
-    init.async_image_retrieval = False; # This parameter can be used to record SVO in camera FPS even if the grab loop is running at a lower FPS (due to compute for ex.)
+    init.async_image_retrieval = True; # This parameter can be used to record SVO in camera FPS even if the grab loop is running at a lower FPS (due to compute for ex.)    
 
     status = cam.open(init) 
     if status != sl.ERROR_CODE.SUCCESS: 
@@ -58,14 +60,21 @@ def main():
     while True:
         if cam.grab(runtime) == sl.ERROR_CODE.SUCCESS : # Check that a new image is successfully acquired
             frames_recorded += 1
-            print("Frame count: " + str(frames_recorded), end="\r")
-            print(str(cam.get_timestamp(sl.TIME_REFERENCE.IMAGE).get_microseconds()))
+            # print("Frame count: " + str(frames_recorded), end="\r")
+            # print(str(cam.get_timestamp(sl.TIME_REFERENCE.IMAGE).get_microseconds()))
     
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument('--output_svo_file', type=str, help='Path to the SVO file that will be written', required= True)
+    praser.add_argument('timestamp', type=str, help='Starting timestamp from host')
+    parser.add_argument('--output_svo_file', type=str, help='Path to the SVO file that will be written', required=False, default='output.svo2')
     opt = parser.parse_args()
     if not opt.output_svo_file.endswith(".svo") and not opt.output_svo_file.endswith(".svo2"): 
         print("--output_svo_file parameter should be a .svo file but is not : ",opt.output_svo_file,"Exit program.")
         exit()
+
+    try:
+        received_time = args.timestamp
+        print(received_time)
+        print('-------------------------------')
+
     main()
