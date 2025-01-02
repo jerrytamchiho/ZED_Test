@@ -64,6 +64,10 @@ def main():
             # print(str(cam.get_timestamp(sl.TIME_REFERENCE.IMAGE).get_microseconds()))
 
     print(opt.output_svo_file)
+
+    cam.disable_recording()
+    cam.close()
+    sys.exit(0)
     
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
