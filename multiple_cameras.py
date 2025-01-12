@@ -28,6 +28,7 @@ import numpy as np
 import threading
 import time
 import signal
+import argparse 
 
 zed_list = []
 name_list = []
@@ -100,11 +101,13 @@ def main():
             zed_list[index].close()
         index = index +1
 
+    computer_id = "02"
     #Start camera threads
     for index in range(0, len(zed_list)):
         if zed_list[index].is_opened():
-            print(f'camera_index: {index}')
-            output_path = f'{index}_recording.svo2'
+            print(f'camera_id {name_list[index]}')
+            print(opt.output_svo_file)
+            output_path = f'{computer_id}_{name_list[index]}_recording.svo2'
             thread_list.append(threading.Thread(target=grab_run, args=(index, output_path)))
             thread_list[index].start()
 
@@ -117,4 +120,11 @@ def main():
     print("\nFINISH")
 
 if __name__ == "__main__":
+    # parser = argparse.ArgumentParser()
+    # parser.add_argument('--output_svo_file', type=str, help='Path to the SVO file that will be written', required=False, default='output.svo2')
+    # opt = parser.parse_args()
+    # if not opt.output_svo_file.endswith(".svo") and not opt.output_svo_file.endswith(".svo2"): 
+    #     print("--output_svo_file parameter should be a .svo file but is not : ", opt.output_svo_file,"Exit program.")
+    #     exit()
+
     main()
