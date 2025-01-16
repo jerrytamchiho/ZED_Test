@@ -28,6 +28,7 @@ import numpy as np
 import threading
 import time
 import signal
+import os
 import argparse 
 
 zed_list = []
@@ -52,7 +53,8 @@ def grab_run(index, output_svo_file):
         print("Recording ZED : ", err)
         exit(1)
     else:
-        print(output_svo_file)
+        print(f'Running {output_svo_file}')
+        # print(output_svo_file)
 
     runtime = sl.RuntimeParameters()
 
@@ -65,6 +67,7 @@ def grab_run(index, output_svo_file):
             frames_count += 1
         else:
             missed_counter += 1
+            print('missed_frame')
         # time.sleep(0.001) #1ms
 
     zed_list[index].disable_recording()
@@ -80,10 +83,10 @@ def main():
 
     signal.signal(signal.SIGINT, signal_handler)
 
-    print("Running...")
+    print("Initializing...")
     init = sl.InitParameters()
-    init.camera_resolution = sl.RESOLUTION.HD1080
-    init.camera_fps = 30  # The framerate is lowered to avoid any USB3 bandwidth issues
+    init.camera_resolution = sl.RESOLUTION.HD2K
+    init.camera_fps = 15  # The framerate is lowered to avoid any USB3 bandwidth issues
     init.depth_mode = sl.DEPTH_MODE.ULTRA
 
     #List and open cameras
@@ -105,9 +108,12 @@ def main():
     #Start camera threads
     for index in range(0, len(zed_list)):
         if zed_list[index].is_opened():
-            print(f'camera_id {name_list[index]}')
-            print(opt.output_svo_file)
-            output_path = f'{computer_id}_{name_list[index]}_recording.svo2'
+            output_path = f'{computer_id}_{name_list[index]}_{opt.output_file}'
+            print(f'camera_id {name_list[index]}: {output_path}')
+            if(os.path.exists(output_path)):
+                print('Recording already exist. Prevent overwritting file.')
+                exit()
+
             thread_list.append(threading.Thread(target=grab_run, args=(index, output_path)))
             thread_list[index].start()
 
@@ -120,11 +126,18 @@ def main():
     print("\nFINISH")
 
 if __name__ == "__main__":
-    # parser = argparse.ArgumentParser()
-    # parser.add_argument('--output_svo_file', type=str, help='Path to the SVO file that will be written', required=False, default='output.svo2')
-    # opt = parser.parse_args()
-    # if not opt.output_svo_file.endswith(".svo") and not opt.output_svo_file.endswith(".svo2"): 
-    #     print("--output_svo_file parameter should be a .svo file but is not : ", opt.output_svo_file,"Exit program.")
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--output_file', type=str, help='Path to the SVO file that will be written', required=False, default='recording')
+    opt = parser.parse_args()
+    if not opt.output_file.endswith(".svo") and not opt.output_file.endswith(".svo2"): 
+        # print(opt.output_file)
+        print('Add svo2 file format')
+        opt.output_file  += '.svo2'
+        # print("--output_file parameter should be a .svo file but is not : ", opt.output_file,"Exit program.")
+
+    print(f'Recording filename: {opt.output_file}')   
+    # if(os.path.exists(opt.output_file)):
+    #     print('Recording already exist. Prevent overwritting file.')
     #     exit()
 
     main()
