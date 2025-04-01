@@ -59,7 +59,7 @@ def main():
     zed_serial = cam.get_camera_information().serial_number
     # print("Hello! This is my serial number: {}".format(zed_serial))
 
-    output_dir = '/home/vizlab/Desktop/recordings'
+    output_dir = '/home/user/Desktop/recordings'
     # output_dir = '~/Desktop/recordings'
     output_name = start_time + str(zed_serial) + '.svo2'
     print('Output file: ', output_name)
