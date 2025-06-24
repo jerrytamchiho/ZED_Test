@@ -79,7 +79,7 @@ def main():
     body_runtime_param.skeleton_smoothing = 0.7
 
     communication_param = sl.CommunicationParameters()
-    communication_param.setForLocalNetwork(30003, "192.168.0.135")
+    communication_param.set_for_local_network(30002, "192.168.0.135")
     zed.start_publishing(communication_param)
     print("Start publishing")
 
