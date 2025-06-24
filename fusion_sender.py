@@ -30,31 +30,23 @@ def parse_args(init):
     if ("HD2K" in opt.resolution):
         init.camera_resolution = sl.RESOLUTION.HD2K
         print("[Sample] Using Camera in resolution HD2K")
-    elif ("HD1200" in opt.resolution):
-        init.camera_resolution = sl.RESOLUTION.HD1200
-        print("[Sample] Using Camera in resolution HD1200")
     elif ("HD1080" in opt.resolution):
         init.camera_resolution = sl.RESOLUTION.HD1080
         print("[Sample] Using Camera in resolution HD1080")
     elif ("HD720" in opt.resolution):
         init.camera_resolution = sl.RESOLUTION.HD720
         print("[Sample] Using Camera in resolution HD720")
-    elif ("SVGA" in opt.resolution):
-        init.camera_resolution = sl.RESOLUTION.SVGA
-        print("[Sample] Using Camera in resolution SVGA")
-    elif ("VGA" in opt.resolution):
-        init.camera_resolution = sl.RESOLUTION.VGA
-        print("[Sample] Using Camera in resolution VGA")
     elif len(opt.resolution)>0: 
         print("[Sample] No valid resolution entered. Using default")
     else : 
+        init.camera_resolution = sl.RESOLUTION.HD1080
         print("[Sample] Using default resolution")
         
 def main():
 
     init = sl.InitParameters()
     init.camera_resolution = sl.RESOLUTION.AUTO
-    init.depth_mode = sl.DEPTH_MODE.ULTRA
+    init.depth_mode = sl.DEPTH_MODE.NEURAL
     init.sdk_verbose = 1
     parse_args(init)
 
@@ -69,7 +61,8 @@ def main():
     positional_tracking_parameters = sl.PositionalTrackingParameters()
     # If the camera is static, uncomment the following line to have better performances
     # positional_tracking_parameters.set_as_static = True
-    zed.enable_positional_tracking(positional_tracking_parameters)
+    if zed.enable_positional_tracking(positional_tracking_parameters)!= sl.ERROR_CODE.SUCCESS:
+        return
     
     # enable body tracking
     body_param = sl.BodyTrackingParameters()
@@ -77,56 +70,35 @@ def main():
     body_param.enable_body_fitting = False            # Smooth skeleton move
     body_param.body_format = sl.BODY_FORMAT.BODY_18  # Choose the BODY_FORMAT you wish to use
     body_param.detection_model = sl.BODY_TRACKING_MODEL.HUMAN_BODY_FAST 
-    zed.enable_body_tracking(body_param)
+    if zed.enable_body_tracking(body_param) != sl.ERROR_CODE.SUCCESS:
+        return
 
-
+    # runtime parameters
     body_runtime_param = sl.BodyTrackingRuntimeParameters()
     body_runtime_param.detection_confidence_threshold = 40
     body_runtime_param.skeleton_smoothing = 0.7
 
     communication_param = sl.CommunicationParameters()
+    communication_param.port = 30000
     zed.start_publishing(communication_param)
+    print("Start publishing")
 
     exit_app = False 
     bodies = sl.Bodies()
-
-    # 36559288
-    print("Start working!!!")
-    runtime = sl.RuntimeParameters()
 
     try : 
         while not exit_app:
             if zed.grab() == sl.ERROR_CODE.SUCCESS: 
                 zed.retrieve_bodies(bodies, body_runtime_param)
-                print(bodies)
+                # print(bodies)
                 # sleep(0.001)
     except KeyboardInterrupt:
         exit_app = True 
 
-    # runtime = sl.RuntimeParameters()
-    # stream_params = sl.StreamingParameters()
-    # stream_params.port = 30002
-    # print("Streaming on port ",stream_params.port) #Get the port used to stream
-    # stream_params.codec = sl.STREAMING_CODEC.H264
-    # stream_params.bitrate = 4000
-    # status_streaming = cam.enable_streaming(stream_params) #Enable streaming
-    # if status_streaming != sl.ERROR_CODE.SUCCESS:
-    #     print("Streaming initialization error: ", status_streaming)
-    #     cam.close()
-    #     exit()
-    # exit_app = False 
-    # try : 
-    #     while not exit_app:
-    #         err = cam.grab(runtime)
-    #         if err == sl.ERROR_CODE.SUCCESS: 
-    #             sleep(0.001)
-    # except KeyboardInterrupt:
-    #     exit_app = True 
-
-    # disable Streaming
-    # cam.disable_streaming()
     # close the Camera
-    # cam.close()
+    zed.disable_body_tracking()
+    zed.disable_positional_tracking()
+    zed.close()
     
     
 if __name__ == "__main__":
